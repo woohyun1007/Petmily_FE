@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import api from '../api';
+import { useNavigate } from 'react-router-dom';
+import api from '../../api';
 
 const Login = ({onLoginSuccess}) => {
   const [loginData, setLoginData] = useState({
     loginId: '',
     password: ''
   });
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setLoginData({ ...loginData, [e.target.name]: e.target.value });
@@ -22,10 +24,11 @@ const Login = ({onLoginSuccess}) => {
       
       if (token) {
         localStorage.setItem('token', token); // 브라우저에 토큰 저장
-        alert('로그인 성공!');
         
         if (onLoginSuccess) {
-            onLoginSuccess();
+          onLoginSuccess();
+          alert('로그인 성공!');
+          navigate('/');
         }
       }
     } catch (error) {

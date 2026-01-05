@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import api from '../api';
+import api from '../../api';
+import { useNavigate } from 'react-router-dom';
 
 const MyInfo = () => {
   const [userInfo, setUserInfo] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchInfo = async () => {
@@ -22,8 +24,13 @@ const MyInfo = () => {
     <div style={{ padding: '20px', border: '1px solid #ccc', marginTop: '20px' }}>
       <h3>내 정보</h3>
       <p>아이디: {userInfo.loginId}</p>
-      <p>이름: {userInfo.username}</p>
+      <p>이름: {userInfo.nickname}</p>
       <p>이메일: {userInfo.email}</p>
+      <div style={{ marginTop: '10px' }}>
+      <button onClick={() => navigate(`/myinfo/update`)}>수정</button>
+      <button onClick={() => navigate(`/myinfo/passwordupdate`)}>비밀번호 변경</button>
+
+      </div>
     </div>
   );
 };

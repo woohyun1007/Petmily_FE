@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import api from '../api';
+import api from '../../api';
+import { Link } from 'react-router-dom';
 
 const PostList = () => {
   const [posts, setPosts] = useState([]);
@@ -36,6 +37,8 @@ const PostList = () => {
               <th>제목</th>
               <th>작성자</th>
               <th>조회수</th>
+              <th>등록일자</th>
+              <th>상태</th>
             </tr>
           </thead>
           <tbody>
@@ -43,10 +46,15 @@ const PostList = () => {
               <tr key={post.id} style={{ borderBottom: '1px solid #eee', textAlign: 'center' }}>
                 <td>{post.category}</td>
                 <td style={{ textAlign: 'left', padding: '10px', cursor: 'pointer' }}>
-                  {post.title}
+                  <Link to = {`/post/${post.id}`} style={{ textDecoration: 'none', color: 'black'}}>
+                    {post.title}
+                  </Link>
                 </td>
-                <td>{post.authorName}</td>
+                <td>{post.writerNickname}</td>
                 <td>{post.viewCount}</td>
+                <td>{post.updatedAt}</td>
+                <td>{post.status}</td>
+                
               </tr>
             ))}
           </tbody>
