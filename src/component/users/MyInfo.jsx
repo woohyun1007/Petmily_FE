@@ -29,7 +29,6 @@ const MyInfo = () => {
       <div style={{ marginTop: '10px' }}>
       <button onClick={() => navigate(`/myinfo/update`)}>수정</button>
       <button onClick={() => navigate(`/myinfo/passwordupdate`)}>비밀번호 변경</button>
-
       </div>
     </div>
   );

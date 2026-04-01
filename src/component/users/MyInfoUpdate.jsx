@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import useNavigationGuard from '../../hooks/useNavigationGuard';
 import api from '../../api';
 
 const MyInfoUpdate = () => {
@@ -10,6 +11,10 @@ const MyInfoUpdate = () => {
     email: ''
   });
   const [loading, setLoading] = useState(true);
+  const [isDirty, setIsDirty] = useState(false);
+
+  useNavigationGuard(isDirty, "작성 중인 내용이 사라집니다. 정말 이동하시겠습니까?");
+
 
   // 1. 현재 로그인한 사용자의 정보 불러오기
   useEffect(() => {
@@ -17,6 +22,7 @@ const MyInfoUpdate = () => {
       try {
         const response = await api.get('/api/users');
         setUser(response.data);
+        setIsDirty(false);
         setLoading(false);
       } catch (error) {
         alert('사용자 정보를 불러오는데 실패했습니다.');
@@ -33,6 +39,7 @@ const MyInfoUpdate = () => {
       ...prev,
       [name]: value
     }));
+    setIsDirty(true);
   };
 
   // 2. 수정한 정보 저장하기
@@ -42,6 +49,7 @@ const MyInfoUpdate = () => {
       // 닉네임만 변경 가능하게 한다면 { nickname: user.nickname } 형태로 전송
       await api.patch('/api/users', user);
       alert('정보가 성공적으로 변경되었습니다.');
+      setIsDirty(false);
       navigate('/myinfo'); // 마이페이지 메인으로 이동
     } catch (error) {
       alert('변경 실패: ' + (error.response?.data?.message || '오류가 발생했습니다.'));
@@ -93,7 +101,7 @@ const MyInfoUpdate = () => {
         <button type="submit" style={{ width: '100%', padding: '10px', backgroundColor: '#007bff', color: 'white', border: 'none' }}>
           저장하기
         </button>
-        <button type="button" onClick={() => navigate(-1)} style={{ width: '100%', marginTop: '5px', padding: '10px' }}>
+        <button type="button" onClick={() => { setIsDirty(false); navigate(-1); }} style={{ width: '100%', marginTop: '5px', padding: '10px' }}>
           취소
         </button>
       </form>

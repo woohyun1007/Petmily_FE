@@ -34,7 +34,6 @@ const PasswordUpdate = () => {
 
       alert("비밀번호가 성공적으로 변경되었습니다. 다시 로그인해주세요.");
       localStorage.removeItem("token"); // 비밀번호 변경 후 로그아웃 처리
-      // navigate 대신 window.location.href를 쓰면 앱의 모든 메모리 상태가 초기화됩니다.
       window.location.href = "/login";
     } catch (error) {
       alert(
