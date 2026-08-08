@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import api from "../../api";
+import api, { getApiErrorMessage } from "../../api";
 import { useAuth } from "../../context/AuthContext";
 import CommentSection from "./CommentSection";
 import { Button, Card, HelperText, PageContainer, Row, SubTitle } from "../../styles/ui";
@@ -74,7 +74,7 @@ const PostDetail = () => {
         const response = await api.get(`/api/posts/${id}`);
         setPost(response.data);
       } catch (error) {
-        alert("게시글을 불러올 수 없습니다.");
+        alert(getApiErrorMessage(error, "게시글을 불러올 수 없습니다."));
         navigate("/");
       }
     };
@@ -86,9 +86,14 @@ const PostDetail = () => {
       try {
         await api.delete(`/api/posts/${id}`);
         alert("삭제되었습니다.");
-        navigate(-1);
+        navigate(`/posts?category=${post.category}`, { replace: true });
       } catch (error) {
-        alert("삭제 권한이 없거나 오류가 발생했습니다.");
+        alert(
+          `삭제 실패: ${getApiErrorMessage(
+            error,
+            "삭제 권한이 없거나 오류가 발생했습니다.",
+          )}`,
+        );
       }
     }
   };
@@ -135,7 +140,7 @@ const PostDetail = () => {
         </>
       )}
 
-      <Button onClick={() => navigate(-1)} variant="secondary" style={{ width: "auto" }}>
+      <Button onClick={() => navigate(`/posts?category=${post.category}`)} style={{ width: "auto" }}>
         목록으로
       </Button>
 
@@ -147,7 +152,6 @@ const PostDetail = () => {
           </Button>
           <Button
             onClick={handleDelete}
-            variant="danger"
             style={{ width: "auto" }}
           >
             삭제

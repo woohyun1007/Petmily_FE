@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import api from "../../api";
+import api, { getApiErrorMessage } from "../../api";
 
 const PetList = ({ onEditRequest, refreshTrigger }) => {
   const [pets, setPets] = useState([]);
@@ -24,7 +24,7 @@ const PetList = ({ onEditRequest, refreshTrigger }) => {
         alert("삭제되었습니다.")
         fetchPets();
       } catch (error) {
-        alert("삭제 실패");
+        alert(`삭제 실패: ${getApiErrorMessage(error, "삭제에 실패했습니다.")}`);
       }
     }
   };
@@ -54,7 +54,7 @@ const PetList = ({ onEditRequest, refreshTrigger }) => {
           >
             <strong>{pet.name}</strong> [{pet.breed}]
             <p>
-              {pet.age}살 / {pet.gender === "MALE" ? "수컷" : "암컷"}
+              {pet.age}살 / {pet.gender === "MALE" ? "남" : "여"}
             </p>
             {pet.imageUrl ? (
               <img

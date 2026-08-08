@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import api from "../../api";
+import api, { ensureCsrfToken, getApiErrorMessage } from "../../api";
 import { useAuth } from "../../context/AuthContext";
-import { applyAuthState, persistAuthSession } from "../../utils/auth";
+import { completeAuthSession } from "../../utils/auth";
 import {
   Button,
   Card,
@@ -54,18 +54,11 @@ const Login = () => {
   });
   const navigate = useNavigate();
   const { setIsLogin, setUserId } = useAuth();
-  const apiBaseUrl = api.defaults.baseURL || "http://localhost:8080";
   const kakaoRestApiKey = import.meta.env.VITE_KAKAO_REST_API_KEY;
-  const kakaoRedirectUri =
-    import.meta.env.VITE_KAKAO_REDIRECT_URI ||
-    `${apiBaseUrl}/api/auth/kakao/callback`;
-  const kakaoLoginUrl =
-    import.meta.env.VITE_KAKAO_LOGIN_URL ||
-    (kakaoRestApiKey
-      ? `https://kauth.kakao.com/oauth/authorize?client_id=${kakaoRestApiKey}&redirect_uri=${encodeURIComponent(
+  const kakaoRedirectUri = import.meta.env.VITE_KAKAO_REDIRECT_URI;
+  const kakaoLoginUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${kakaoRestApiKey}&redirect_uri=${encodeURIComponent(
           kakaoRedirectUri
-        )}&response_type=code&scope=profile_nickname`
-      : "");
+        )}&response_type=code&scope=profile_nickname, account_email`;
 
   const handleChange = (e) => {
     setLoginData({ ...loginData, [e.target.name]: e.target.value });
@@ -74,30 +67,29 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await api.post("/api/auth/login", loginData);
+      await api.post("/api/auth/login", loginData);
 
-      const { id, nickname, tokenInfo } = response.data;
-
-      if (tokenInfo && tokenInfo.accessToken) {
-        const session = persistAuthSession({ id, nickname, tokenInfo });
-        applyAuthState({ setIsLogin, setUserId }, session);
-        alert(`${nickname}님, 환영합니다!`);
-        navigate("/");
-      }
+      const authResponse = await api.get("/api/auth");
+      const session = completeAuthSession(
+        { setIsLogin, setUserId },
+        authResponse.data || {},
+      );
+      await ensureCsrfToken();
+      alert(`${session.nickname || "회원"}님, 환영합니다!`);
+      navigate("/");
     } catch (error) {
       alert(
-        "로그인 실패: " +
-          (error.response?.data?.message ||
-            "아이디 또는 비밀번호를 확인하세요.")
+        `로그인 실패: ${getApiErrorMessage(
+          error,
+          "아이디 또는 비밀번호를 확인하세요.",
+        )}`,
       );
     }
   };
 
   const handleKakaoLogin = () => {
-    if (!kakaoLoginUrl) {
-      alert("카카오 로그인 URL이 비어있습니다. .env에 VITE_KAKAO_REST_API_KEY를 설정해주세요.");
-      return;
-    }
+    sessionStorage.setItem("oauthLoginInProgress", "true");
+    // GET 요청과 동일한 방식으로 카카오 로그인 URL로 이동
     window.location.href = kakaoLoginUrl;
   };
 

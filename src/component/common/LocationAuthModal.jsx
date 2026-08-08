@@ -469,7 +469,6 @@ const LocationAuthModal = ({ isOpen, onClose, onConfirm }) => {
             <Button
               onClick={requestCurrentLocation}
               disabled={loading}
-              variant="sky"
               style={{ width: "auto" }}
             >
               다시 시도
@@ -483,7 +482,6 @@ const LocationAuthModal = ({ isOpen, onClose, onConfirm }) => {
             </Button>
             <Button
               onClick={onClose}
-              variant="secondary"
               style={{ width: "auto" }}
             >
               취소

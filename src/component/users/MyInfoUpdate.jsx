@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useNavigationGuard from '../../hooks/useNavigationGuard';
-import api from '../../api';
+import api, { ensureCsrfToken, getApiErrorMessage } from '../../api';
 
 const MyInfoUpdate = () => {
   const navigate = useNavigate();
@@ -12,8 +12,13 @@ const MyInfoUpdate = () => {
   });
   const [loading, setLoading] = useState(true);
   const [isDirty, setIsDirty] = useState(false);
+  const allowNavigateRef = useRef(false);
 
-  useNavigationGuard(isDirty, "작성 중인 내용이 사라집니다. 정말 이동하시겠습니까?");
+  useNavigationGuard(
+    isDirty,
+    allowNavigateRef,
+    '작성 중인 내용이 사라집니다. 정말 이동하시겠습니까?'
+  );
 
 
   // 1. 현재 로그인한 사용자의 정보 불러오기
@@ -25,7 +30,7 @@ const MyInfoUpdate = () => {
         setIsDirty(false);
         setLoading(false);
       } catch (error) {
-        alert('사용자 정보를 불러오는데 실패했습니다.');
+        alert(getApiErrorMessage(error, '사용자 정보를 불러오는데 실패했습니다.'));
         navigate('/');
       }
     };
@@ -46,13 +51,14 @@ const MyInfoUpdate = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // 닉네임만 변경 가능하게 한다면 { nickname: user.nickname } 형태로 전송
-      await api.patch('/api/users', user);
+      await ensureCsrfToken();
+      await api.patch('/api/users', { nickname: user.nickname });
       alert('정보가 성공적으로 변경되었습니다.');
+      allowNavigateRef.current = true;
       setIsDirty(false);
       navigate('/myinfo'); // 마이페이지 메인으로 이동
     } catch (error) {
-      alert('변경 실패: ' + (error.response?.data?.message || '오류가 발생했습니다.'));
+      alert(`변경 실패: ${getApiErrorMessage(error)}`);
     }
   };
 
@@ -68,9 +74,8 @@ const MyInfoUpdate = () => {
             type="text"
             name="loginId" 
             value={user.loginId}
-            onChange={handleChange} 
-            style={{ width: '100%', backgroundColor: '#f0f0f0' }}
-            required
+            readOnly
+            style={{ width: '100%', backgroundColor: '#f0f0f0', color: '#666' }}
           />
         </div>
 
@@ -80,9 +85,8 @@ const MyInfoUpdate = () => {
             type="email" 
             name="email"
             value={user.email} 
-            onChange={handleChange}
-            style={{ width: '100%' }}
-            required
+            readOnly
+            style={{ width: '100%', backgroundColor: '#f0f0f0', color: '#666' }}
           />
         </div>
 
@@ -101,7 +105,15 @@ const MyInfoUpdate = () => {
         <button type="submit" style={{ width: '100%', padding: '10px', backgroundColor: '#007bff', color: 'white', border: 'none' }}>
           저장하기
         </button>
-        <button type="button" onClick={() => { setIsDirty(false); navigate(-1); }} style={{ width: '100%', marginTop: '5px', padding: '10px' }}>
+        <button
+          type="button"
+          onClick={() => {
+            allowNavigateRef.current = true;
+            setIsDirty(false);
+            navigate(-1);
+          }}
+          style={{ width: '100%', marginTop: '5px', padding: '10px' }}
+        >
           취소
         </button>
       </form>

@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import styled from "styled-components";
-import api from "../../api";
+import api, { getApiErrorMessage } from "../../api";
 import { useLocation, useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import "dayjs/locale/ko";
-import { Button, Card, Input, PageContainer, Row, Select, Title } from "../../styles/ui";
+import { Button, Card, HelperText, Input, PageContainer, Row, Select, Title } from "../../styles/ui";
 
 const Toolbar = styled(Row)`
   justify-content: space-between;
@@ -84,6 +84,7 @@ const Pagination = styled.div`
 const PostList = ({ category }) => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
   const [totalPages, setTotalPages] = useState(0);
   const [searchInput, setSearchInput] = useState("");
 
@@ -142,14 +143,9 @@ const PostList = ({ category }) => {
     navigate(`${location.pathname}?${queryParams.toString()}`);
   };
 
-  useEffect(() => {
-    if (category) {
-      fetchPost();
-    }
-  }, [category, location.search]);
-
-  const fetchPost = async () => {
+  const fetchPost = useCallback(async () => {
     setLoading(true);
+    setErrorMessage("");
     try {
       const response = await api.get(`/api/posts`, {
         params: {
@@ -165,10 +161,21 @@ const PostList = ({ category }) => {
       setTotalPages(response.data.page.totalPages || 0);
     } catch (error) {
       console.error("게시글 로딩 실패: ", error);
+      setErrorMessage(
+        getApiErrorMessage(error, "게시글을 불러오지 못했습니다."),
+      );
+      setPosts([]);
+      setTotalPages(0);
     } finally {
       setLoading(false);
     }
-  };
+  }, [category, currentPage, keyword, sort, status]);
+
+  useEffect(() => {
+    if (category) {
+      fetchPost();
+    }
+  }, [category, fetchPost]);
 
   if (loading && posts.length === 0) return <PageContainer>게시글을 불러오는 중...</PageContainer>;
 
@@ -242,6 +249,11 @@ const PostList = ({ category }) => {
             검색 초기화
           </Button>
         </div>
+      )}
+      {errorMessage && (
+        <HelperText danger style={{ marginBottom: "10px", fontSize: "14px" }}>
+          {errorMessage}
+        </HelperText>
       )}
       <TableScroll>
         <ListTable>
@@ -326,7 +338,6 @@ const PostList = ({ category }) => {
           <Button
             disabled={currentPage === 0}
             onClick={() => handlePageChange(currentPage - 1)}
-            variant="secondary"
             style={{ width: "auto" }}
           >
             이전
@@ -348,7 +359,6 @@ const PostList = ({ category }) => {
           <Button
             disabled={currentPage >= totalPages - 1}
             onClick={() => handlePageChange(currentPage + 1)}
-            variant="secondary"
             style={{ width: "auto" }}
           >
             다음

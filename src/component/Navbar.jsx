@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { useAuth } from "../context/AuthContext";
-import api from "../api";
 
 const Nav = styled.nav`
   display: flex;
@@ -77,14 +76,8 @@ const Navbar = () => {
   const { isLogin, logout } = useAuth();
 
   const handleLogout = async () => {
-    try {
-      await api.delete("/api/auth/logout");
-      alert("로그아웃 되었습니다.");
-    } catch (error) {
-      console.error("로그아웃 중 오류 발생: ", error);
-    } finally {
-      logout();
-    }
+    await logout();
+    alert("로그아웃 되었습니다.");
   };
 
   return (

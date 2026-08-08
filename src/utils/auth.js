@@ -1,18 +1,8 @@
+import { clearCsrfToken } from "../api";
+
 export const persistAuthSession = (payload = {}) => {
-  const accessToken =
-    payload.accessToken || payload.token || payload.tokenInfo?.accessToken || null;
-  const refreshToken =
-    payload.refreshToken || payload.tokenInfo?.refreshToken || null;
   const rawUserId = payload.userId || payload.id || payload.memberId || null;
   const nickname = payload.nickname || payload.name || payload.username || "";
-
-  if (accessToken) {
-    localStorage.setItem("accessToken", accessToken);
-  }
-
-  if (refreshToken) {
-    localStorage.setItem("refreshToken", refreshToken);
-  }
 
   if (rawUserId !== null && rawUserId !== undefined && rawUserId !== "") {
     localStorage.setItem("userId", String(rawUserId));
@@ -23,8 +13,6 @@ export const persistAuthSession = (payload = {}) => {
   }
 
   return {
-    accessToken,
-    refreshToken,
     userId:
       rawUserId !== null && rawUserId !== undefined && rawUserId !== ""
         ? Number(rawUserId)
@@ -38,6 +26,13 @@ export const applyAuthState = ({ setIsLogin, setUserId }, session = {}) => {
   if (session.userId !== null && session.userId !== undefined) {
     setUserId(Number(session.userId));
   }
+};
+
+export const completeAuthSession = (authHandlers, payload = {}) => {
+  const session = persistAuthSession(payload);
+  applyAuthState(authHandlers, session);
+  clearCsrfToken();
+  return session;
 };
 
 export const readAuthFromUrl = (search = "", hash = "") => {

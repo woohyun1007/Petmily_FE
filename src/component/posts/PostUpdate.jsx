@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import api from "../../api";
+import api, { getApiErrorMessage } from "../../api";
 import useNavigationGuard from "../../hooks/useNavigationGuard";
 import LocationAuthModal from "../common/LocationAuthModal";
 import {
@@ -114,7 +114,7 @@ const PostUpdate = () => {
         });
         setIsDirty(false);
       } catch (error) {
-        alert("게시글 정보를 불러올 수 없습니다.");
+        alert(getApiErrorMessage(error, "게시글 정보를 불러올 수 없습니다."));
         navigate("/");
       }
     };
@@ -204,9 +204,7 @@ const PostUpdate = () => {
       allowNavigateRef.current = true;
       navigate(`/post/${id}`); // 수정 후 상세 페이지로 이동
     } catch (error) {
-      alert(
-        "수정 실패: " + (error.response?.data?.message || "권한이 없습니다.")
-      );
+      alert(`수정 실패: ${getApiErrorMessage(error, "권한이 없습니다.")}`);
     }
   };
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import useNavigationGuard from "../../hooks/useNavigationGuard";
-import api from "../../api";
+import api, { getApiErrorMessage } from "../../api";
 
 const CommentSection = ({ postId, currentUserId }) => {
   const [comments, setComments] = useState([]);
@@ -33,7 +33,7 @@ const CommentSection = ({ postId, currentUserId }) => {
       setIsDirty(false);
       fetchComments();
     } catch (error) {
-      alert("댓글 등록에 실패했습니다.");
+      alert(`댓글 등록 실패: ${getApiErrorMessage(error, "댓글 등록에 실패했습니다.")}`);
     }
   };
 
@@ -49,7 +49,7 @@ const CommentSection = ({ postId, currentUserId }) => {
       setIsDirty(false);
       fetchComments();
     } catch (error) {
-      alert("댓글 수정에 실패했습니다.");
+      alert(`댓글 수정 실패: ${getApiErrorMessage(error, "댓글 수정에 실패했습니다.")}`);
     }
   };
 
@@ -60,8 +60,8 @@ const CommentSection = ({ postId, currentUserId }) => {
       await api.delete(`/api/posts/${postId}/comments/${commentId}`);
       alert("댓글 삭제되었습니다.");
       fetchComments();
-    } catch (error) {
-      alert("삭제 권한이 없거나 실패했습니다.");
+      } catch (error) {
+        alert(`댓글 삭제 실패: ${getApiErrorMessage(error, "삭제 권한이 없거나 실패했습니다.")}`);
     }
   };
 
@@ -184,13 +184,4 @@ const commentHeaderStyle = {
 };
 const dateStyle = { fontSize: "12px", color: "#999" };
 const contentStyle = { margin: "5px 0", lineHeight: "1.5" };
-const deleteButtonStyle = {
-  fontSize: "12px",
-  color: "#ff4d4f",
-  background: "none",
-  border: "none",
-  cursor: "pointer",
-  padding: 0,
-};
-
 export default CommentSection;

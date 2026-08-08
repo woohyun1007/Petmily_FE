@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../../api";
+import api, { ensureCsrfToken, getApiErrorMessage } from "../../api";
 import { useAuth } from "../../context/AuthContext";
-import { applyAuthState, persistAuthSession, readAuthFromUrl } from "../../utils/auth";
+import { completeAuthSession } from "../../utils/auth";
 import { Card, HelperText, PageContainer, Title } from "../../styles/ui";
 
 const KakaoCallback = () => {
@@ -12,30 +12,20 @@ const KakaoCallback = () => {
 
   useEffect(() => {
     const completeKakaoLogin = async () => {
-      const authFromUrl = readAuthFromUrl(window.location.search, window.location.hash);
-
-      if (authFromUrl.error) {
-        setMessage("카카오 로그인 중 오류가 발생했습니다.");
-        return;
-      }
-
-      if (authFromUrl.accessToken) {
-        const session = persistAuthSession(authFromUrl);
-        applyAuthState({ setIsLogin, setUserId }, session);
-        navigate("/", { replace: true });
-        return;
-      }
-
       try {
         const response = await api.get("/api/auth");
-        const session = persistAuthSession(response.data || {});
-        applyAuthState({ setIsLogin, setUserId }, session);
+        completeAuthSession({ setIsLogin, setUserId }, response.data || {});
+        await ensureCsrfToken();
         navigate("/", { replace: true });
       } catch (error) {
         setMessage(
-          error.response?.data?.message ||
-            "카카오 로그인 완료 정보를 가져오지 못했습니다. 백엔드 리다이렉트 설정을 확인해주세요."
+          getApiErrorMessage(
+            error,
+            "카카오 로그인 완료 정보를 가져오지 못했습니다. 백엔드 리다이렉트 설정을 확인해주세요.",
+          ),
         );
+      } finally {
+        sessionStorage.removeItem("oauthLoginInProgress");
       }
     };
 
