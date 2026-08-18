@@ -18,7 +18,7 @@ React 기반 SPA로 회원·반려동물·게시글·댓글 UI를 구현하고 S
 * 개발 형태: 개인 프로젝트
 * 개발 기간: 2025.09 ~ 진행 중
 * Backend Repository: [Petmily_BE](https://github.com/woohyun1007/Petmily_BE)
-* Notion : [Petmily 상세 문서](https://app.notion.com/p/Petmily-39fb883853bf806eae1de6f2e3e11cf6?source=copy_link)
+* Notion : [Petmily_FE 상세 문서](https://app.notion.com/p/Petmily-39fb883853bf806eae1de6f2e3e11cf6?source=copy_link)
 
 ## 🛠 기술 스택
 
